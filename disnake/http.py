@@ -11,10 +11,12 @@ from errno import ECONNRESET
 from typing import (
     TYPE_CHECKING,
     Any,
+    ClassVar,
     Coroutine,
     Dict,
     Iterable,
     List,
+    Literal,
     Optional,
     Sequence,
     Tuple,
@@ -85,6 +87,19 @@ if TYPE_CHECKING:
 _API_VERSION = 9
 
 
+def _workaround_set_api_version(version: Literal[9, 10]) -> None:
+    """Stopgap measure for verified bots without message content intent while intent is not enforced on api v9.
+    .. note::
+        This must be ran **before** connecting to the gateway.
+    """
+    if version not in (9, 10):
+        raise TypeError("version must be either 9 or 10")
+
+    global _API_VERSION  # noqa: PLW0603
+    _API_VERSION = version
+    Route.BASE = f"api/v{_API_VERSION}"
+
+
 async def json_or_text(response: aiohttp.ClientResponse) -> Union[Dict[str, Any], str]:
     text = await response.text(encoding="utf-8")
     try:
@@ -148,10 +163,12 @@ def to_multipart_with_attachments(
 
 
 class Route:
+    BASE: ClassVar[str] = "api/v9"
+
     def __init__(self, method: str, path: str, **parameters: Any) -> None:
         self.path: str = path
         self.method: str = method
-        url = "api/v9" + self.path
+        url = Route.BASE + self.path
         if parameters:
             url = url.format_map(
                 {k: _uriquote(v) if isinstance(v, str) else v for k, v in parameters.items()}
