@@ -11,12 +11,10 @@ from errno import ECONNRESET
 from typing import (
     TYPE_CHECKING,
     Any,
-    ClassVar,
     Coroutine,
     Dict,
     Iterable,
     List,
-    Literal,
     Optional,
     Sequence,
     Tuple,
@@ -84,21 +82,7 @@ if TYPE_CHECKING:
     T = TypeVar("T")
     Response = Coroutine[Any, Any, T]
 
-_API_VERSION = 10
-
-
-def _workaround_set_api_version(version: Literal[9, 10]) -> None:
-    """Stopgap measure for verified bots without message content intent while intent is not enforced on api v9.
-
-    .. note::
-        This must be ran **before** connecting to the gateway.
-    """
-    if version not in (9, 10):
-        raise TypeError("version must be either 9 or 10")
-
-    global _API_VERSION  # noqa: PLW0603
-    _API_VERSION = version
-    Route.BASE = f"https://discord.com/api/v{_API_VERSION}"
+_API_VERSION = 9
 
 
 async def json_or_text(response: aiohttp.ClientResponse) -> Union[Dict[str, Any], str]:
@@ -164,12 +148,10 @@ def to_multipart_with_attachments(
 
 
 class Route:
-    BASE: ClassVar[str] = "https://discord.com/api/v10"
-
     def __init__(self, method: str, path: str, **parameters: Any) -> None:
         self.path: str = path
         self.method: str = method
-        url = self.BASE + self.path
+        url = "api/v9" + self.path
         if parameters:
             url = url.format_map(
                 {k: _uriquote(v) if isinstance(v, str) else v for k, v in parameters.items()}
@@ -222,11 +204,13 @@ class HTTPClient:
         connector: Optional[aiohttp.BaseConnector] = None,
         *,
         loop: asyncio.AbstractEventLoop,
+        base_url: Optional[str] = None,
         proxy: Optional[str] = None,
         proxy_auth: Optional[aiohttp.BasicAuth] = None,
         unsync_clock: bool = True,
     ) -> None:
         self.loop: asyncio.AbstractEventLoop = loop
+        self.base_url: str = "https://discord.com/" if base_url is None else base_url
         self.connector = connector
         self.__session: aiohttp.ClientSession = MISSING  # filled in static_login
         self._locks: weakref.WeakValueDictionary[str, asyncio.Lock] = weakref.WeakValueDictionary()
@@ -271,7 +255,8 @@ class HTTPClient:
     ) -> Any:
         bucket = route.bucket
         method = route.method
-        url = route.url
+        proto_url = route.url
+        url = f"{self.base_url}{proto_url}"
 
         lock = self._locks.get(bucket)
         if lock is None:
@@ -1781,7 +1766,7 @@ class HTTPClient:
 
     def widget_image_url(self, guild_id: Snowflake, *, style: str) -> str:
         return str(
-            yarl.URL(Route.BASE)
+            yarl.URL(self.base_url)
             .with_path(f"/api/guilds/{guild_id}/widget.png")
             .with_query(style=style)
         )

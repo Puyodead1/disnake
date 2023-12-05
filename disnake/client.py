@@ -378,6 +378,7 @@ class Client:
         *,
         asyncio_debug: bool = False,
         loop: Optional[asyncio.AbstractEventLoop] = None,
+        base_url: Optional[str] = None,
         shard_id: Optional[int] = None,
         shard_count: Optional[int] = None,
         enable_debug_events: bool = False,
@@ -411,6 +412,7 @@ class Client:
             self.loop: asyncio.AbstractEventLoop = loop
 
         self.loop.set_debug(asyncio_debug)
+        self.base_url: str = "https://discord.com/" if base_url is None else base_url
         self._listeners: Dict[str, List[Tuple[asyncio.Future, Callable[..., bool]]]] = {}
         self.session_start_limit: Optional[SessionStartLimit] = None
 
@@ -420,6 +422,7 @@ class Client:
             proxy_auth=proxy_auth,
             unsync_clock=assume_unsync_clock,
             loop=self.loop,
+            base_url=self.base_url,
         )
 
         self._handlers: Dict[str, Callable] = {

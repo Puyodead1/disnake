@@ -17,6 +17,7 @@ def get_bool(env_var: str, *, default: bool = False) -> bool:
 
 
 class Config:
+    base_url = os.environ.get("BASE_URL", "https://api.old.server.spacebar.chat")
     token = os.environ.get("BOT_TOKEN")
     prefix = os.environ.get("PREFIX", ".")
     cogs_folder = os.environ.get("COGS_FOLDER", "cogs")

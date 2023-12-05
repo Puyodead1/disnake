@@ -239,6 +239,7 @@ class Bot(BotBase, InteractionBotBase, disnake.Client):
             sync_commands_on_cog_unload: bool = ...,
             asyncio_debug: bool = False,
             loop: Optional[asyncio.AbstractEventLoop] = None,
+            base_url: Optional[str] = None,
             shard_id: Optional[int] = None,
             shard_count: Optional[int] = None,
             enable_debug_events: bool = False,

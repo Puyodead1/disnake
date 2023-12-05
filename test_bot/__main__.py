@@ -38,6 +38,7 @@ class TestBot(commands.Bot):
             test_guilds=Config.test_guilds,
             reload=Config.auto_reload,
             enable_gateway_error_handler=Config.enable_gateway_error_handler,
+            base_url=Config.base_url,
         )
 
         self.i18n.load("test_bot/locale")
