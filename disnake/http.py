@@ -97,7 +97,7 @@ def _workaround_set_api_version(version: Literal[9, 10]) -> None:
 
     global _API_VERSION  # noqa: PLW0603
     _API_VERSION = version
-    Route.BASE = f"api/v{_API_VERSION}"
+    Route.BASE = f"/api/v{_API_VERSION}"
 
 
 async def json_or_text(response: aiohttp.ClientResponse) -> Union[Dict[str, Any], str]:
@@ -163,7 +163,7 @@ def to_multipart_with_attachments(
 
 
 class Route:
-    BASE: ClassVar[str] = "api/v9"
+    BASE: ClassVar[str] = "/api/v9"
 
     def __init__(self, method: str, path: str, **parameters: Any) -> None:
         self.path: str = path

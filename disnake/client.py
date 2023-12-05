@@ -412,7 +412,7 @@ class Client:
             self.loop: asyncio.AbstractEventLoop = loop
 
         self.loop.set_debug(asyncio_debug)
-        self.base_url: str = "https://discord.com/" if base_url is None else base_url
+        self.base_url: str = "https://discord.com" if base_url is None else base_url
         self._listeners: Dict[str, List[Tuple[asyncio.Future, Callable[..., bool]]]] = {}
         self.session_start_limit: Optional[SessionStartLimit] = None
 
